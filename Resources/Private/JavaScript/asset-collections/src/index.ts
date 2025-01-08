@@ -1,5 +1,6 @@
 export { useAssetCollectionQuery } from './hooks/useAssetCollectionQuery';
 export { default as useAssetCollectionsQuery } from './hooks/useAssetCollectionsQuery';
+export { default as useAssetCollectionsRestrictedQuery } from './hooks/useAssetCollectionsRestrictedQuery';
 export { default as useSelectedAssetCollection } from './hooks/useSelectedAssetCollection';
 export { default as useDeleteAssetCollection } from './hooks/useDeleteAssetCollection';
 export { default as useUpdateAssetCollection } from './hooks/useUpdateAssetCollection';

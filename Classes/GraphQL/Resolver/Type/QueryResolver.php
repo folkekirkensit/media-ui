@@ -25,6 +25,7 @@ use Flowpack\Media\Ui\Service\UsageDetailsService;
 use Neos\Flow\Annotations as Flow;
 use Neos\Flow\Persistence\Doctrine\PersistenceManager;
 use Neos\Flow\Security\Authorization\PrivilegeManagerInterface;
+use Neos\Flow\Security\Context;
 use Neos\Media\Domain\Model\Asset;
 use Neos\Media\Domain\Model\AssetCollection;
 use Neos\Media\Domain\Model\AssetSource\AssetProxy\AssetProxyInterface;
@@ -114,6 +115,12 @@ class QueryResolver implements ResolverInterface
      * @var PrivilegeManagerInterface
      */
     protected $privilegeManager;
+
+    /**
+     * @Flow\Inject
+     * @var Context
+     */
+    protected $securityContext;
 
     /**
      * @Flow\Inject
@@ -312,6 +319,23 @@ class QueryResolver implements ResolverInterface
     public function assetCollections($_, array $variables): array
     {
         return $this->assetCollectionRepository->findAll()->toArray();
+    }
+
+    /**
+     * Returns asset collections
+     * @return AssetCollection[]
+     */
+    public function assetCollectionsRestricted($_, array $variables): array
+    {
+        $assetCollectionsRestricted = [];
+        $assetCollections = $this->assetCollectionRepository->findAll()->toArray();
+        foreach ($assetCollections as $assetCollection) {
+            if ($assetCollection->getTitle() == 'Materialebank' && !$this->securityContext->hasRole('FIT.Intranet:Materialbank')) {
+                continue;
+            }
+            $assetCollectionsRestricted[] = $assetCollection;
+        }
+        return $assetCollectionsRestricted;
     }
 
     /**

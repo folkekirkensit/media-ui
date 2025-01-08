@@ -28,6 +28,7 @@ use Neos\Flow\Persistence\Exception\IllegalObjectTypeException;
 use Neos\Flow\Persistence\Exception\InvalidQueryException;
 use Neos\Flow\Persistence\PersistenceManagerInterface;
 use Neos\Flow\ResourceManagement\ResourceManager;
+use Neos\Flow\Security\Context;
 use Neos\Http\Factories\FlowUploadedFile;
 use Neos\Media\Domain\Model\Asset;
 use Neos\Media\Domain\Model\AssetCollection;
@@ -83,6 +84,12 @@ class MutationResolver implements ResolverInterface
      */
     protected $persistenceManager;
 
+    /**
+     * @Flow\Inject
+     * @var Context
+     */
+    protected $securityContext;
+    
     /**
      * @Flow\Inject
      * @var LoggerInterface
@@ -448,6 +455,9 @@ class MutationResolver implements ResolverInterface
                         if ($assetCollectionId) {
                             /** @var AssetCollection $assetCollection */
                             $assetCollection = $this->assetCollectionRepository->findByIdentifier($assetCollectionId);
+                            if ($assetCollection->getTitle() == 'Materialebank' && !$this->securityContext->hasRole('FIT.Intranet:Materialbank')) {
+                                $assetCollection = null;
+                            }
                         } else {
                             // Assign the asset to the asset collection of the site it has been uploaded to
                             $assetCollection = $this->assetCollectionService->getDefaultCollectionForCurrentSite();

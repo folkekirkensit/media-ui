@@ -4,10 +4,10 @@ import { useRecoilValue } from 'recoil';
 import { Headline, MultiSelectBox, SelectBox } from '@neos-project/react-ui-components';
 
 import { useIntl, useNotify, useMediaUi } from '@media-ui/core';
-import { useConfigQuery, useSelectedAsset, useSetAssetCollections } from '@media-ui/core/src/hooks';
+import { useSelectedAsset, useSetAssetCollections } from '@media-ui/core/src/hooks';
 import { IconLabel } from '@media-ui/core/src/components';
 import { featureFlagsState } from '@media-ui/core/src/state';
-import { collectionPath, useAssetCollectionsQuery } from '@media-ui/feature-asset-collections';
+import { collectionPath, useAssetCollectionsQuery, useAssetCollectionsRestrictedQuery } from '@media-ui/feature-asset-collections';
 
 import * as classes from './CollectionSelectBox.module.css';
 import { AssetCollectionOptionPreviewElement, CollectionOption } from './AssetCollectionOptionPreviewElement';
@@ -19,11 +19,11 @@ const collectionsMatchAsset = (assetCollectionIds: string[], asset: Asset) => {
 const CollectionSelectBox: React.FC = () => {
     const Notify = useNotify();
     const { translate } = useIntl();
-    const { config } = useConfigQuery();
     const {
         approvalAttainmentStrategy: { obtainApprovalToSetAssetCollections },
     } = useMediaUi();
     const { assetCollections } = useAssetCollectionsQuery();
+    const { assetCollectionsRestricted } = useAssetCollectionsRestrictedQuery();
     const { setAssetCollections, loading } = useSetAssetCollections();
     const selectedAsset = useSelectedAsset();
     const { limitToSingleAssetCollectionPerAsset } = useRecoilValue(featureFlagsState);
@@ -44,9 +44,24 @@ const CollectionSelectBox: React.FC = () => {
         [assetCollections]
     );
 
+    const restrictedSelectBoxOptions: CollectionOption[] = useMemo(
+        () =>
+            assetCollectionsRestricted.map((collection) => ({
+                label: collection.title,
+                id: collection.id,
+                secondaryLabel: collection.parent
+                    ? '/' +
+                      collectionPath(collection, assetCollectionsRestricted)
+                          .map(({ title }) => title)
+                          .join('/')
+                    : '',
+            })),
+        [assetCollectionsRestricted]
+    );
+
     const filteredSelectBoxOptions: CollectionOption[] = useMemo(
-        () => selectBoxOptions.filter(({ label }) => label.toLowerCase().includes(searchTerm)),
-        [selectBoxOptions, searchTerm]
+        () => restrictedSelectBoxOptions.filter(({ label }) => label.toLowerCase().includes(searchTerm)),
+        [restrictedSelectBoxOptions, searchTerm]
     );
 
     const [selectedAssetCollectionIds, setSelectedAssetCollectionIds] = useState<string[]>([]);
@@ -137,7 +152,7 @@ const CollectionSelectBox: React.FC = () => {
                         onSearchTermChange={handleSearchTermChange}
                         ListPreviewElement={AssetCollectionOptionPreviewElement}
                         displaySearchBox
-                        allowEmpty={false}
+                        allowEmpty
                         threshold={0}
                     />
                 </>
@@ -159,7 +174,7 @@ const CollectionSelectBox: React.FC = () => {
                         onSearchTermChange={handleSearchTermChange}
                         ListPreviewElement={AssetCollectionOptionPreviewElement}
                         displaySearchBox
-                        allowEmpty={!config.defaultAssetCollectionId}
+                        allowEmpty
                         threshold={0}
                     />
                 </>

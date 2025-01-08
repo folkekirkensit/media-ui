@@ -7,6 +7,7 @@ import { IconLabel } from '@media-ui/core/src/components';
 import {
     collectionPath,
     useAssetCollectionsQuery,
+    useAssetCollectionsRestrictedQuery,
     useSelectedAssetCollection,
     useSetAssetCollectionParent,
 } from '@media-ui/feature-asset-collections';
@@ -20,6 +21,7 @@ const ParentCollectionSelectBox = () => {
     const { translate } = useIntl();
     const { approvalAttainmentStrategy } = useMediaUi();
     const { assetCollections } = useAssetCollectionsQuery();
+    const { assetCollectionsRestricted } = useAssetCollectionsRestrictedQuery();
     const selectedAssetCollection = useSelectedAssetCollection();
     const { setAssetCollectionParent, loading } = useSetAssetCollectionParent();
     const [searchTerm, setSearchTerm] = useState('');
@@ -41,9 +43,25 @@ const ParentCollectionSelectBox = () => {
         [assetCollections, selectedAssetCollection?.id]
     );
 
+
+    const restrictedSelectBoxOptions: CollectionOption[] = useMemo(
+        () =>
+            assetCollectionsRestricted.map((collection) => ({
+                label: collection.title,
+                id: collection.id,
+                secondaryLabel: collection.parent
+                    ? '/' +
+                      collectionPath(collection, assetCollectionsRestricted)
+                          .map(({ title }) => title)
+                          .join('/')
+                    : '',
+            })),
+        [assetCollectionsRestricted]
+    );
+
     const filteredSelectBoxOptions: CollectionOption[] = useMemo(
-        () => selectBoxOptions.filter(({ label }) => label.toLowerCase().includes(searchTerm)),
-        [selectBoxOptions, searchTerm]
+        () => restrictedSelectBoxOptions.filter(({ label }) => label.toLowerCase().includes(searchTerm)),
+        [restrictedSelectBoxOptions, searchTerm]
     );
 
     const handleChange = useCallback(
@@ -96,7 +114,7 @@ const ParentCollectionSelectBox = () => {
             </Headline>
             <SelectBox
                 className={classes.collectionSelectBox}
-                disabled={loading || filteredSelectBoxOptions.length === 0}
+                disabled={loading}
                 placeholder={translate('inspector.collections.placeholder', 'Select a collection')}
                 value={selectedAssetCollection.parent?.id}
                 optionValueField="id"
