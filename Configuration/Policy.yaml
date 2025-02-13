@@ -32,5 +32,5 @@ roles:
       - privilegeTarget: 'Flowpack.Media.Ui:Queries'
         permission: GRANT
   'FIT.Intranet:Materialbank':
-    label: 'Materialebank'
-    description: 'Adgang til at uploade til Materialebanken'
+    label: 'Kommunikationsværktøjskassen'
+    description: 'Adgang til at uploade til Kommunikationsværktøjskassen'
