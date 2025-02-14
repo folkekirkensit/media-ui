@@ -33,4 +33,4 @@ roles:
         permission: GRANT
   'FIT.Intranet:Materialbank':
     label: 'Kommunikationsværktøjskassen'
-    description: 'Adgang til at uploade til Kommunikationsværktøjskassen'
+    description: 'Adgang til at uploade til Kommunikationsværktøjskassen.'
